@@ -18,7 +18,9 @@ def test_load_transmission_keeps_bad_rows_visible(tmp_path: Path) -> None:
     assert result.total_records == 2
     assert result.loaded_records == 1
     assert len(result.rejected_records) == 1
-    assert result.rejected_records[0][0] == 2
+    assert result.rejected_records[0].line_number == 2
+    assert result.rejected_records[0].reason == "2 champs au lieu de 11"
+    assert result.rejection_reasons == {"2 champs au lieu de 11": 1}
 
 
 def test_convert_types_reports_invalid_values(tmp_path: Path) -> None:
@@ -51,4 +53,3 @@ def test_baseline_always_not_hoax() -> None:
     score = baseline_always_not_hoax(pd.Series([True, False, False, False]))
 
     assert score == 0.75
-

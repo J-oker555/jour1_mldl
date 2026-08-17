@@ -8,6 +8,25 @@ def pct(value: float) -> str:
     return f"{value * 100:.2f} %"
 
 
+def _format_rejected_examples(load_result: LoadResult, limit: int = 3) -> str:
+    if not load_result.rejected_records:
+        return "Aucune ligne traitee a part."
+
+    lines = []
+    for record in load_result.rejected_records[:limit]:
+        preview = " | ".join(record.row)
+        if len(preview) > 180:
+            preview = f"{preview[:177]}..."
+        lines.append(f"- Ligne {record.line_number}: {record.reason}. Extrait: `{preview}`")
+    return "\n".join(lines)
+
+
+def _format_rejection_reasons(load_result: LoadResult) -> str:
+    if not load_result.rejection_reasons:
+        return "- Aucun rejet"
+    return "\n".join(f"- {reason}: {count}" for reason, count in load_result.rejection_reasons.items())
+
+
 def render_report(
     load_result: LoadResult,
     anomalies: dict[str, dict[str, object]],
@@ -26,6 +45,8 @@ def render_report(
         f"| `{row['column']}` | `{row['source']}` | {row['writer']} | {row['moment']} | {row['knows_hoax']} |"
         for row in leakage_rows
     )
+    rejected_examples = _format_rejected_examples(load_result)
+    rejection_reasons = _format_rejection_reasons(load_result)
 
     return f"""# Rapport
 
@@ -33,9 +54,17 @@ def render_report(
 
 - Lignes logiques lues: {load_result.total_records}
 - Lignes chargees: {load_result.loaded_records}
-- Lignes traitees a part: {len(load_result.rejected_records)}
+- Lignes traitees a part: {load_result.rejected_records_count}
 
 Les lignes mises a part sont celles dont le nombre de champs ne correspond pas aux onze champs du manifeste.
+
+Repartition des problemes:
+
+{rejection_reasons}
+
+Exemples:
+
+{rejected_examples}
 
 ## Phase 2 - Types et anomalies
 
