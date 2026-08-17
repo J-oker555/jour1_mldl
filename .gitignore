@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+reports/generated/*
+!reports/generated/.gitkeep
+partie1-1_reception_des_releves.pdf
+*.pyc
+*.log
