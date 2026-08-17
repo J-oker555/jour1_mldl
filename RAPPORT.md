@@ -8,6 +8,16 @@
 
 Les lignes mises a part sont celles dont le nombre de champs ne correspond pas aux onze champs du manifeste.
 
+Repartition des problemes:
+
+- 12 champs au lieu de 11: 196
+
+Exemples:
+
+- Ligne 877: 12 champs au lieu de 11. Extrait: `10/1/2006 12:00 |  |  |  |  | 0 |  |  | ((EDITORIAL COMMENT ABOUT THE UFO PHENOMEN))  ufo+alien+reptiles | 10/30/2006 | 0 | 0`
+- Ligne 1712: 12 champs au lieu de 11. Extrait: `10/14/2004 13:00 |  |  |  |  | 0 |  |  | With all the guns in this country...why hasn&#39t anyone taken a shot at one? | 10/27/2004 | 0 | 0`
+- Ligne 1814: 12 champs au lieu de 11. Extrait: `10/14/2011 22:30 |  | nv |  |  | 0 | light | 22 | 3 Green lights | 10/19/2011 | 0 | 0`
+
 ## Phase 2 - Types et anomalies
 
 - `datetime` (datetime): 1220 valeurs invalides. Exemples: ['10/10/2005 24:00', '10/11/1994 24:00', '10/11/2006 24:00', '10/11/2012 24:00', '10/1/1972 24:00', '10/1/1981 24:00', '10/1/2001 24:00', '10/1/2003 24:00', '10/1/2009 24:00', '10/1/2012 24:00']

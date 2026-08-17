@@ -9,11 +9,34 @@ from .config import DATA_URL, HEADERS
 
 
 @dataclass(frozen=True)
+class RejectedRecord:
+    line_number: int
+    field_count: int
+    expected_field_count: int
+    row: list[str]
+
+    @property
+    def reason(self) -> str:
+        return f"{self.field_count} champs au lieu de {self.expected_field_count}"
+
+
+@dataclass(frozen=True)
 class LoadResult:
     frame: pd.DataFrame
     total_records: int
     loaded_records: int
-    rejected_records: list[tuple[int, list[str]]]
+    rejected_records: list[RejectedRecord]
+
+    @property
+    def rejected_records_count(self) -> int:
+        return len(self.rejected_records)
+
+    @property
+    def rejection_reasons(self) -> dict[str, int]:
+        reasons: dict[str, int] = {}
+        for record in self.rejected_records:
+            reasons[record.reason] = reasons.get(record.reason, 0) + 1
+        return dict(sorted(reasons.items()))
 
 
 def download_data(target: Path, url: str = DATA_URL) -> Path:
@@ -27,7 +50,7 @@ def download_data(target: Path, url: str = DATA_URL) -> Path:
 def load_transmission(path: Path, headers: list[str] | None = None) -> LoadResult:
     expected_headers = headers or HEADERS
     rows: list[dict[str, str]] = []
-    rejected: list[tuple[int, list[str]]] = []
+    rejected: list[RejectedRecord] = []
 
     with path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.reader(handle)
@@ -35,7 +58,14 @@ def load_transmission(path: Path, headers: list[str] | None = None) -> LoadResul
             if not row:
                 continue
             if len(row) != len(expected_headers):
-                rejected.append((line_number, row))
+                rejected.append(
+                    RejectedRecord(
+                        line_number=line_number,
+                        field_count=len(row),
+                        expected_field_count=len(expected_headers),
+                        row=row,
+                    )
+                )
                 continue
             rows.append(dict(zip(expected_headers, row, strict=True)))
 
@@ -71,4 +101,3 @@ def convert_types(frame: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, dict[str
         }
 
     return converted, anomalies
-
