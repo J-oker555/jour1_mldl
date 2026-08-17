@@ -20,11 +20,17 @@ Exemples:
 
 ## Phase 2 - Types et anomalies
 
-- `datetime` (datetime): 1220 valeurs invalides. Exemples: ['10/10/2005 24:00', '10/11/1994 24:00', '10/11/2006 24:00', '10/11/2012 24:00', '10/1/1972 24:00', '10/1/1981 24:00', '10/1/2001 24:00', '10/1/2003 24:00', '10/1/2009 24:00', '10/1/2012 24:00']
-- `date_posted` (date): 0 valeurs invalides. Exemples: []
-- `duration_seconds` (number): 3 valeurs invalides. Exemples: ['2`', '8`', '0.5`']
-- `latitude` (number): 1 valeurs invalides. Exemples: ['33q.200088']
-- `longitude` (number): 0 valeurs invalides. Exemples: []
+Les conversions sont appliquees sans supprimer de ligne. Les valeurs impossibles deviennent `NaN` ou `NaT`, puis sont comptees et conservees pour l'analyse.
+
+- `datetime` -> date et heure: 1220 valeurs invalides, 0 valeurs vides. Origine probable: temoin. Exemples fautifs: ['10/10/2005 24:00', '10/11/1994 24:00', '10/11/2006 24:00', '10/11/2012 24:00', '10/1/1972 24:00', '10/1/1981 24:00', '10/1/2001 24:00', '10/1/2003 24:00', '10/1/2009 24:00', '10/1/2012 24:00']
+  - Nature: heure 24:00 non parseable: 1220
+- `date_posted` -> date: 0 valeurs invalides, 0 valeurs vides. Origine probable: service de transmission. Exemples fautifs: []
+- `duration_seconds` -> nombre: 3 valeurs invalides, 2 valeurs vides. Origine probable: capteur. Exemples fautifs: ['2`', '8`', '0.5`']
+  - Nature: caractere parasite dans un nombre: 3
+  - Nature: valeur vide: 2
+- `latitude` -> nombre: 1 valeurs invalides, 0 valeurs vides. Origine probable: capteur. Exemples fautifs: ['33q.200088']
+  - Nature: lettre dans un nombre: 1
+- `longitude` -> nombre: 0 valeurs invalides, 0 valeurs vides. Origine probable: capteur. Exemples fautifs: []
 
 ## Phase 3 - Etiquette canular
 
