@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from .data import ConversionAnomaly, LoadResult
+from .labels import HoaxLabelResult
 from .modeling import ModelMetrics
 
 
@@ -40,11 +41,28 @@ def _format_conversion_anomalies(anomalies: dict[str, ConversionAnomaly]) -> str
     return "\n".join(lines)
 
 
+def _format_trigger_counts(label_result: HoaxLabelResult) -> str:
+    if not label_result.trigger_counts:
+        return "- Aucun mot declencheur trouve"
+    return "\n".join(f"- `{term}`: {count}" for term, count in label_result.trigger_counts.items())
+
+
+def _format_hoax_examples(label_result: HoaxLabelResult) -> str:
+    if not label_result.examples:
+        return "- Aucun exemple positif"
+    lines = []
+    for example in label_result.examples:
+        compact = " ".join(example.split())
+        if len(compact) > 180:
+            compact = f"{compact[:177]}..."
+        lines.append(f"- `{compact}`")
+    return "\n".join(lines)
+
+
 def render_report(
     load_result: LoadResult,
     anomalies: dict[str, ConversionAnomaly],
-    hoax_count: int,
-    hoax_rate: float,
+    label_result: HoaxLabelResult,
     leakage_rows: list[dict[str, str]],
     leaky_metrics: ModelMetrics,
     clean_metrics: ModelMetrics,
@@ -57,6 +75,8 @@ def render_report(
     )
     rejected_examples = _format_rejected_examples(load_result)
     rejection_reasons = _format_rejection_reasons(load_result)
+    trigger_counts = _format_trigger_counts(label_result)
+    hoax_examples = _format_hoax_examples(label_result)
 
     return f"""# Rapport
 
@@ -84,12 +104,20 @@ Les conversions sont appliquees sans supprimer de ligne. Les valeurs impossibles
 
 ## Phase 3 - Etiquette canular
 
-Regle: un releve est marque comme canular si le temoignage contient un mot explicite comme `hoax`, `fake`, `prank` ou `joke`.
+Regle: {label_result.rule}.
 
-- Releves marques canulars: {hoax_count}
-- Proportion: {pct(hoax_rate)}
+- Releves marques canulars: {label_result.positive_count}
+- Proportion: {pct(label_result.positive_rate)}
 
-Limite: cette regle rate les canulars qui ne sont pas avoues dans le texte et peut attraper a tort un temoignage qui nie explicitement le canular.
+Mots declencheurs trouves:
+
+{trigger_counts}
+
+Exemples de releves marques:
+
+{hoax_examples}
+
+Limite: {label_result.limitation}
 
 ## Phase 4 - Premier verdict
 

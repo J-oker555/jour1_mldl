@@ -34,12 +34,28 @@ Les conversions sont appliquees sans supprimer de ligne. Les valeurs impossibles
 
 ## Phase 3 - Etiquette canular
 
-Regle: un releve est marque comme canular si le temoignage contient un mot explicite comme `hoax`, `fake`, `prank` ou `joke`.
+Regle: un releve est marque comme canular si le temoignage contient un mot explicite comme hoax, fake, prank, joke, joking ou balloon prank.
 
 - Releves marques canulars: 827
 - Proportion: 0.93 %
 
-Limite: cette regle rate les canulars qui ne sont pas avoues dans le texte et peut attraper a tort un temoignage qui nie explicitement le canular.
+Mots declencheurs trouves:
+
+- `hoax`: 798
+- `fake`: 9
+- `prank`: 2
+- `joke`: 15
+- `joking`: 3
+
+Exemples de releves marques:
+
+- `a flying colorful disc above my car&#44 near Erie. ((NUFORC Note: Possible hoax?? PD))`
+- `((HOAX??)) Short encounter with space craft on my way into my parking lot area.`
+- `Silver egg shape over six houses. ((NUFORC Note: Possible hoax?? PD))`
+- `Lights in Irvine October 2007: Hoax`
+- `((HOAX??)) abduction. 500 Lights On Object0: Yes`
+
+Limite: Cette regle rate les canulars qui ne sont pas avoues dans le texte et peut attraper a tort un temoignage qui nie explicitement le canular.
 
 ## Phase 4 - Premier verdict
 

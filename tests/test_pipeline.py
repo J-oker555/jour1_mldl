@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from src.ufo_pipeline.data import convert_types, load_transmission
-from src.ufo_pipeline.labels import build_hoax_label
+from src.ufo_pipeline.labels import build_hoax_label, describe_hoax_label
 from src.ufo_pipeline.modeling import baseline_always_not_hoax
 
 
@@ -82,6 +82,20 @@ def test_hoax_label_is_explainable() -> None:
     labels = build_hoax_label(pd.Series(["this was a hoax", "bright light", "fake report"]))
 
     assert labels.tolist() == [True, False, True]
+
+
+def test_describe_hoax_label_reports_rule_counts_and_examples() -> None:
+    import pandas as pd
+
+    result = describe_hoax_label(pd.Series(["this was a hoax", "bright light", "fake report"]))
+
+    assert result.labels.tolist() == [True, False, True]
+    assert result.positive_count == 2
+    assert result.positive_rate == 2 / 3
+    assert result.trigger_counts == {"hoax": 1, "fake": 1}
+    assert "temoignage contient" in result.rule
+    assert len(result.examples) == 2
+    assert "rate les canulars" in result.limitation
 
 
 def test_baseline_always_not_hoax() -> None:
