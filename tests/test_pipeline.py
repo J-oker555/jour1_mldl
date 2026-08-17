@@ -33,10 +33,47 @@ def test_convert_types_reports_invalid_values(tmp_path: Path) -> None:
 
     _, anomalies = convert_types(loaded.frame)
 
-    assert anomalies["datetime"]["count"] == 1
-    assert anomalies["duration_seconds"]["count"] == 1
-    assert anomalies["latitude"]["count"] == 1
-    assert anomalies["longitude"]["count"] == 0
+    assert anomalies["datetime"].invalid_count == 1
+    assert anomalies["datetime"].origin == "temoin"
+    assert anomalies["date_posted"].origin == "service de transmission"
+    assert anomalies["duration_seconds"].invalid_count == 1
+    assert anomalies["duration_seconds"].origin == "capteur"
+    assert anomalies["duration_seconds"].nature_counts == {"lettre dans un nombre": 1}
+    assert anomalies["latitude"].invalid_count == 1
+    assert anomalies["latitude"].nature_counts == {"lettre dans un nombre": 1}
+    assert anomalies["longitude"].invalid_count == 0
+
+
+def test_convert_types_keeps_rows_and_counts_missing_values(tmp_path: Path) -> None:
+    sample = tmp_path / "sample.csv"
+    sample.write_text(
+        "2020-01-01 20:00,paris,idf,fr,circle,,ten,comment,2020-01-02,,\n",
+        encoding="utf-8",
+    )
+    loaded = load_transmission(sample)
+
+    converted, anomalies = convert_types(loaded.frame)
+
+    assert len(converted) == loaded.loaded_records
+    assert anomalies["duration_seconds"].missing_count == 1
+    assert anomalies["duration_seconds"].invalid_count == 0
+    assert anomalies["duration_seconds"].nature_counts == {"valeur vide": 1}
+    assert anomalies["latitude"].missing_count == 1
+    assert anomalies["longitude"].missing_count == 1
+
+
+def test_convert_types_classifies_common_real_dataset_anomalies(tmp_path: Path) -> None:
+    sample = tmp_path / "sample.csv"
+    sample.write_text(
+        "10/10/2005 24:00,paris,idf,fr,circle,2`,ten,comment,2020-01-02,48.85,2.35\n",
+        encoding="utf-8",
+    )
+    loaded = load_transmission(sample)
+
+    _, anomalies = convert_types(loaded.frame)
+
+    assert anomalies["datetime"].nature_counts == {"heure 24:00 non parseable": 1}
+    assert anomalies["duration_seconds"].nature_counts == {"caractere parasite dans un nombre": 1}
 
 
 def test_hoax_label_is_explainable() -> None:

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .data import LoadResult
+from .data import ConversionAnomaly, LoadResult
 from .modeling import ModelMetrics
 
 
@@ -27,9 +27,22 @@ def _format_rejection_reasons(load_result: LoadResult) -> str:
     return "\n".join(f"- {reason}: {count}" for reason, count in load_result.rejection_reasons.items())
 
 
+def _format_conversion_anomalies(anomalies: dict[str, ConversionAnomaly]) -> str:
+    lines = []
+    for info in anomalies.values():
+        lines.append(
+            f"- `{info.column}` -> {info.target_type}: {info.invalid_count} valeurs invalides, "
+            f"{info.missing_count} valeurs vides. Origine probable: {info.origin}. "
+            f"Exemples fautifs: {info.examples}"
+        )
+        for nature, count in info.nature_counts.items():
+            lines.append(f"  - Nature: {nature}: {count}")
+    return "\n".join(lines)
+
+
 def render_report(
     load_result: LoadResult,
-    anomalies: dict[str, dict[str, object]],
+    anomalies: dict[str, ConversionAnomaly],
     hoax_count: int,
     hoax_rate: float,
     leakage_rows: list[dict[str, str]],
@@ -37,10 +50,7 @@ def render_report(
     clean_metrics: ModelMetrics,
     baseline_accuracy: float,
 ) -> str:
-    anomaly_lines = "\n".join(
-        f"- `{column}` ({info['type']}): {info['count']} valeurs invalides. Exemples: {info['examples']}"
-        for column, info in anomalies.items()
-    )
+    anomaly_lines = _format_conversion_anomalies(anomalies)
     leakage_lines = "\n".join(
         f"| `{row['column']}` | `{row['source']}` | {row['writer']} | {row['moment']} | {row['knows_hoax']} |"
         for row in leakage_rows
@@ -67,6 +77,8 @@ Exemples:
 {rejected_examples}
 
 ## Phase 2 - Types et anomalies
+
+Les conversions sont appliquees sans supprimer de ligne. Les valeurs impossibles deviennent `NaN` ou `NaT`, puis sont comptees et conservees pour l'analyse.
 
 {anomaly_lines}
 
