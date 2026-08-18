@@ -99,5 +99,8 @@ Le premier modele utilise une information derivee du temoignage alors que l'etiq
 
 - Accuracy du stagiaire qui repond toujours `pas canular`: 99.07 %
 - Accuracy du modele propre: 59.43 %
+- Releves signales canular par le stagiaire: 0
+- Rappel canular du stagiaire: 0.00 %
+- Precision canular du stagiaire: 0.00 %
 
 L'accuracy seule est trompeuse ici parce que les canulars sont rares. Un systeme peut obtenir un score eleve en ignorant tous les canulars. Pour defendre le modele, il faut presenter le rappel et la precision de la classe canular.
