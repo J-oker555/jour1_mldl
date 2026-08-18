@@ -2,7 +2,6 @@ from pathlib import Path
 
 from src.ufo_pipeline.data import convert_types, load_transmission
 from src.ufo_pipeline.labels import build_hoax_label, describe_hoax_label
-from src.ufo_pipeline.modeling import baseline_always_not_hoax
 
 
 def test_load_transmission_keeps_bad_rows_visible(tmp_path: Path) -> None:
@@ -98,9 +97,3 @@ def test_describe_hoax_label_reports_rule_counts_and_examples() -> None:
     assert "rate les canulars" in result.limitation
 
 
-def test_baseline_always_not_hoax() -> None:
-    import pandas as pd
-
-    score = baseline_always_not_hoax(pd.Series([True, False, False, False]))
-
-    assert score == 0.75

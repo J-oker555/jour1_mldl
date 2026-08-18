@@ -59,6 +59,17 @@ def _format_hoax_examples(label_result: HoaxLabelResult) -> str:
     return "\n".join(lines)
 
 
+def _format_evaluation_protocol(metrics: ModelMetrics) -> str:
+    return (
+        f"Split stratifie avec {metrics.test_fraction:.0%} des donnees en test, "
+        f"graine aleatoire {metrics.random_seed}. "
+        f"Apprentissage: {metrics.train_size} releves "
+        f"({metrics.train_positive} canulars, {metrics.train_negative} non-canulars). "
+        f"Test: {metrics.test_size} releves "
+        f"({metrics.test_positive} canulars, {metrics.test_negative} non-canulars)."
+    )
+
+
 def render_report(
     load_result: LoadResult,
     anomalies: dict[str, ConversionAnomaly],
@@ -77,6 +88,7 @@ def render_report(
     rejection_reasons = _format_rejection_reasons(load_result)
     trigger_counts = _format_trigger_counts(label_result)
     hoax_examples = _format_hoax_examples(label_result)
+    evaluation_protocol = _format_evaluation_protocol(leaky_metrics)
 
     return f"""# Rapport
 
@@ -121,10 +133,17 @@ Limite: {label_result.limitation}
 
 ## Phase 4 - Premier verdict
 
-Evaluation sur {leaky_metrics.test_size} releves jamais vus pendant l'apprentissage.
+{evaluation_protocol}
 
 - Sur 100 canulars reels, le systeme en attrape: {leaky_metrics.recall * 100:.2f}
 - Sur 100 releves signales, vraiment canulars: {leaky_metrics.precision * 100:.2f}
+
+Matrice de confusion sur le jeu de test:
+
+| Reel \\ Predit | Pas canular | Canular |
+| --- | ---: | ---: |
+| Pas canular | {leaky_metrics.true_negative} | {leaky_metrics.false_positive} |
+| Canular | {leaky_metrics.false_negative} | {leaky_metrics.true_positive} |
 
 ## Phase 5 - Fuite de donnees
 
