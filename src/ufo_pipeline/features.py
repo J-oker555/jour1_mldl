@@ -1,12 +1,61 @@
+from dataclasses import dataclass
+
 import pandas as pd
 
 from .labels import HOAX_PATTERN
 
 
-LEAKY_COLUMNS = {"comments", "date_posted"}
+@dataclass(frozen=True)
+class FeatureInfo:
+    column: str
+    source: str
+    writer: str
+    moment: str
+    knows_hoax: bool
 
 
-def add_basic_features(frame: pd.DataFrame, include_leaky: bool) -> pd.DataFrame:
+@dataclass(frozen=True)
+class FeatureSet:
+    frame: pd.DataFrame
+    metadata: list[FeatureInfo]
+
+    @property
+    def leakage_rows(self) -> list[dict[str, str]]:
+        return [
+            {
+                "column": info.column,
+                "source": info.source,
+                "writer": info.writer,
+                "moment": info.moment,
+                "knows_hoax": "oui" if info.knows_hoax else "non",
+            }
+            for info in self.metadata
+        ]
+
+    @property
+    def clean_columns(self) -> list[str]:
+        return [info.column for info in self.metadata if not info.knows_hoax]
+
+    def without_leakage(self) -> pd.DataFrame:
+        return self.frame[self.clean_columns].copy()
+
+
+FEATURE_METADATA = [
+    FeatureInfo("duration_seconds", "duration_seconds", "capteur", "au moment du releve", False),
+    FeatureInfo("latitude", "latitude", "capteur", "au moment du releve", False),
+    FeatureInfo("longitude", "longitude", "capteur", "au moment du releve", False),
+    FeatureInfo("has_state", "state", "service de transmission", "au moment du releve", False),
+    FeatureInfo("has_country", "country", "service de transmission", "au moment du releve", False),
+    FeatureInfo("comment_length", "comments", "temoin", "apres observation", True),
+    FeatureInfo("shape", "shape", "temoin", "au moment du releve", False),
+    FeatureInfo("country", "country", "service de transmission", "au moment du releve", False),
+    FeatureInfo("hour", "datetime", "temoin", "au moment du releve", False),
+    FeatureInfo("month", "datetime", "temoin", "au moment du releve", False),
+    FeatureInfo("comment_hoax_keyword", "comments", "temoin", "apres observation", True),
+]
+
+
+def build_feature_set(frame: pd.DataFrame) -> FeatureSet:
     features = pd.DataFrame(index=frame.index)
     features["duration_seconds"] = frame["duration_seconds"]
     features["latitude"] = frame["latitude"]
@@ -21,31 +70,21 @@ def add_basic_features(frame: pd.DataFrame, include_leaky: bool) -> pd.DataFrame
     features["hour"] = dt.dt.hour
     features["month"] = dt.dt.month
 
-    if include_leaky:
-        features["comment_hoax_keyword"] = (
-            frame["comments"].fillna("").astype(str).str.contains(HOAX_PATTERN, regex=True)
-        )
-    else:
-        features = features.drop(columns=["comment_length"])
+    features["comment_hoax_keyword"] = frame["comments"].fillna("").astype(str).str.contains(HOAX_PATTERN, regex=True)
 
-    return features
+    return FeatureSet(frame=features, metadata=FEATURE_METADATA)
+
+
+def add_basic_features(frame: pd.DataFrame, include_leaky: bool) -> pd.DataFrame:
+    feature_set = build_feature_set(frame)
+    if include_leaky:
+        return feature_set.frame
+    return feature_set.without_leakage()
 
 
 def leakage_table(model_columns: list[str]) -> list[dict[str, str]]:
-    leaky_feature_sources = {
-        "comment_length": "comments",
-        "comment_hoax_keyword": "comments",
-    }
-    rows = []
-    for column in model_columns:
-        source = leaky_feature_sources.get(column, column)
-        rows.append(
-            {
-                "column": column,
-                "source": source,
-                "writer": "temoin" if source == "comments" else "capteur ou transmission",
-                "moment": "apres observation" if source in LEAKY_COLUMNS else "au moment du releve",
-                "knows_hoax": "oui" if source in LEAKY_COLUMNS else "non",
-            }
-        )
-    return rows
+    metadata_by_column = {info.column: info for info in FEATURE_METADATA}
+    return FeatureSet(
+        frame=pd.DataFrame(columns=model_columns),
+        metadata=[metadata_by_column[column] for column in model_columns],
+    ).leakage_rows
