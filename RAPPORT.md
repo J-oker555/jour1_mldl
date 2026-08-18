@@ -77,16 +77,16 @@ Le premier modele utilise une information derivee du temoignage alors que l'etiq
 
 | Colonne modele | Source | Qui ecrit | Quand | Savait deja si canular |
 | --- | --- | --- | --- | --- |
-| `duration_seconds` | `duration_seconds` | capteur ou transmission | au moment du releve | non |
-| `latitude` | `latitude` | capteur ou transmission | au moment du releve | non |
-| `longitude` | `longitude` | capteur ou transmission | au moment du releve | non |
-| `has_state` | `has_state` | capteur ou transmission | au moment du releve | non |
-| `has_country` | `has_country` | capteur ou transmission | au moment du releve | non |
+| `duration_seconds` | `duration_seconds` | capteur | au moment du releve | non |
+| `latitude` | `latitude` | capteur | au moment du releve | non |
+| `longitude` | `longitude` | capteur | au moment du releve | non |
+| `has_state` | `state` | service de transmission | au moment du releve | non |
+| `has_country` | `country` | service de transmission | au moment du releve | non |
 | `comment_length` | `comments` | temoin | apres observation | oui |
-| `shape` | `shape` | capteur ou transmission | au moment du releve | non |
-| `country` | `country` | capteur ou transmission | au moment du releve | non |
-| `hour` | `hour` | capteur ou transmission | au moment du releve | non |
-| `month` | `month` | capteur ou transmission | au moment du releve | non |
+| `shape` | `shape` | temoin | au moment du releve | non |
+| `country` | `country` | service de transmission | au moment du releve | non |
+| `hour` | `datetime` | temoin | au moment du releve | non |
+| `month` | `datetime` | temoin | au moment du releve | non |
 | `comment_hoax_keyword` | `comments` | temoin | apres observation | oui |
 
 | Mesure | Avant retrait | Apres retrait |
