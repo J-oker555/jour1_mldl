@@ -59,10 +59,17 @@ Limite: Cette regle rate les canulars qui ne sont pas avoues dans le texte et pe
 
 ## Phase 4 - Premier verdict
 
-Evaluation sur 22170 releves jamais vus pendant l'apprentissage.
+Split stratifie avec 25% des donnees en test, graine aleatoire 42. Apprentissage: 66509 releves (620 canulars, 65889 non-canulars). Test: 22170 releves (207 canulars, 21963 non-canulars).
 
 - Sur 100 canulars reels, le systeme en attrape: 100.00
 - Sur 100 releves signales, vraiment canulars: 100.00
+
+Matrice de confusion sur le jeu de test:
+
+| Reel \ Predit | Pas canular | Canular |
+| --- | ---: | ---: |
+| Pas canular | 21963 | 0 |
+| Canular | 0 | 207 |
 
 ## Phase 5 - Fuite de donnees
 
