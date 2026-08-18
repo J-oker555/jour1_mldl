@@ -2,7 +2,7 @@ from src.ufo_pipeline.config import RAW_DATA, REPORT
 from src.ufo_pipeline.data import convert_types, download_data, load_transmission
 from src.ufo_pipeline.features import build_feature_set
 from src.ufo_pipeline.labels import describe_hoax_label
-from src.ufo_pipeline.modeling import baseline_always_not_hoax, train_and_evaluate
+from src.ufo_pipeline.modeling import baseline_always_not_hoax_metrics, train_and_evaluate
 from src.ufo_pipeline.reporting import render_report, write_report
 
 
@@ -18,7 +18,7 @@ def main() -> None:
     clean_features = feature_set.without_leakage()
     leaky_metrics = train_and_evaluate(leaky_features, target)
     clean_metrics = train_and_evaluate(clean_features, target)
-    baseline_accuracy = baseline_always_not_hoax(target)
+    baseline_metrics = baseline_always_not_hoax_metrics(target)
 
     report = render_report(
         load_result=load_result,
@@ -27,7 +27,7 @@ def main() -> None:
         leakage_rows=feature_set.leakage_rows,
         leaky_metrics=leaky_metrics,
         clean_metrics=clean_metrics,
-        baseline_accuracy=baseline_accuracy,
+        baseline_metrics=baseline_metrics,
     )
     write_report(REPORT, report)
     print(f"Rapport ecrit dans {REPORT}")

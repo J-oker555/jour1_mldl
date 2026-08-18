@@ -2,7 +2,7 @@ from pathlib import Path
 
 from .data import ConversionAnomaly, LoadResult
 from .labels import HoaxLabelResult
-from .modeling import ModelMetrics
+from .modeling import BaselineMetrics, ModelMetrics
 
 
 def pct(value: float) -> str:
@@ -77,7 +77,7 @@ def render_report(
     leakage_rows: list[dict[str, str]],
     leaky_metrics: ModelMetrics,
     clean_metrics: ModelMetrics,
-    baseline_accuracy: float,
+    baseline_metrics: BaselineMetrics,
 ) -> str:
     anomaly_lines = _format_conversion_anomalies(anomalies)
     leakage_lines = "\n".join(
@@ -161,8 +161,11 @@ Le premier modele utilise une information derivee du temoignage alors que l'etiq
 
 ## Phase 6 - Modele naif
 
-- Accuracy du stagiaire qui repond toujours `pas canular`: {pct(baseline_accuracy)}
+- Accuracy du stagiaire qui repond toujours `pas canular`: {pct(baseline_metrics.accuracy)}
 - Accuracy du modele propre: {pct(clean_metrics.accuracy)}
+- Releves signales canular par le stagiaire: {baseline_metrics.predicted_positive}
+- Rappel canular du stagiaire: {pct(baseline_metrics.recall)}
+- Precision canular du stagiaire: {pct(baseline_metrics.precision)}
 
 L'accuracy seule est trompeuse ici parce que les canulars sont rares. Un systeme peut obtenir un score eleve en ignorant tous les canulars. Pour defendre le modele, il faut presenter le rappel et la precision de la classe canular.
 """

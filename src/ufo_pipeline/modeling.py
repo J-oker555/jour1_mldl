@@ -29,6 +29,15 @@ class ModelMetrics:
     random_seed: int
 
 
+@dataclass(frozen=True)
+class BaselineMetrics:
+    accuracy: float
+    recall: float
+    precision: float
+    predicted_positive: int
+    predicted_negative: int
+
+
 def train_and_evaluate(
     features: pd.DataFrame,
     target: pd.Series,
@@ -83,4 +92,16 @@ def train_and_evaluate(
 
 
 def baseline_always_not_hoax(target: pd.Series) -> float:
-    return float((~target.astype(bool)).mean())
+    return baseline_always_not_hoax_metrics(target).accuracy
+
+
+def baseline_always_not_hoax_metrics(target: pd.Series) -> BaselineMetrics:
+    labels = target.astype(bool)
+    predictions = pd.Series(False, index=labels.index)
+    return BaselineMetrics(
+        accuracy=accuracy_score(labels, predictions),
+        recall=recall_score(labels, predictions, zero_division=0),
+        precision=precision_score(labels, predictions, zero_division=0),
+        predicted_positive=int(predictions.sum()),
+        predicted_negative=int((~predictions).sum()),
+    )

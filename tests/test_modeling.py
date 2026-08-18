@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.ufo_pipeline.modeling import baseline_always_not_hoax, train_and_evaluate
+from src.ufo_pipeline.modeling import baseline_always_not_hoax, baseline_always_not_hoax_metrics, train_and_evaluate
 
 
 def test_train_and_evaluate_reports_split_and_confusion_matrix() -> None:
@@ -29,3 +29,13 @@ def test_baseline_always_not_hoax() -> None:
     score = baseline_always_not_hoax(pd.Series([True, False, False, False]))
 
     assert score == 0.75
+
+
+def test_baseline_always_not_hoax_metrics_exposes_why_accuracy_is_misleading() -> None:
+    metrics = baseline_always_not_hoax_metrics(pd.Series([True, False, False, False]))
+
+    assert metrics.accuracy == 0.75
+    assert metrics.recall == 0
+    assert metrics.precision == 0
+    assert metrics.predicted_positive == 0
+    assert metrics.predicted_negative == 4
